@@ -12,6 +12,166 @@
 // Allow the format to be M/dd/YYYY  ie; 5/21/2020
 // The Sheet's Sheet7, and Sheet6 will automatically be generated after you enter the Air Date
 
+function Brand6(){
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var brand6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Brand6");
+  
+  var firstEmptyRow = 14;
+  var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
+  var TotalRowsCreated = (lastRow-2)*12;
+  
+  for(var i=1;i<=3;i++){
+    Logger.log("Starting Value: "+ firstEmptyRow);
+    
+   // firstEmptyRow = firstEmptyRow + 12;
+    var network = sheet6.getRange("C"+firstEmptyRow).getValue();
+ 
+    
+    switch(network){
+    case "Bravo":
+      brand6.getRange('C1').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C1:C12').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "CNBC":
+      brand6.getRange('C14').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C14:C25').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "MSNBC":
+      brand6.getRange('C27').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C27:C38').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+   
+    case "NBC":
+      brand6.getRange('C40').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C40:C51').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "NBC NEWS":
+      brand6.getRange('C53').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C53:C64').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;     
+    case "Oxygen":
+      brand6.getRange('C66').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C66:C77').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+      
+    case "E!":
+      brand6.getRange('C79').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C79:C90').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "Universo":
+      brand6.getRange('C92').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C92:C103').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;  
+    case "Telemundo":
+      brand6.getRange('C105').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C105:C116').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+      
+    case "USA":
+      brand6.getRange('C118').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C118:C129').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "Golf":
+      brand6.getRange('C131').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C131:C142').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    case "SyFy":
+      brand6.getRange('C144').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C144:C155').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+      
+    case "Universal Kids":
+      brand6.getRange('C157').activate();
+      var currentCell = brand6.getCurrentCell();
+      brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+      currentCell.activateAsCurrentCell();
+      sheet6.getRange("H"+firstEmptyRow).activate();
+      sheet6.getRange('Brand6!C157:C168').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+        firstEmptyRow = firstEmptyRow+12;
+        break;
+    }
+  }
+  
+  /*
+  if (network == "E!"){
+  
+    brand6.getRange('C79').activate();
+    var currentCell = brand6.getCurrentCell();
+    brand6.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate();
+    currentCell.activateAsCurrentCell();
+    sheet6.getRange("H"+firstEmptyRow).activate();
+    sheet6.getRange('Brand6!C79:C90').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);
+    firstEmptyRow = firstEmptyRow + 12;
+    Logger.log(firstEmptyRow);
+  }
+  
+  */
+
+  
+  
+}
+
 function BuildSyndication(){
   var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
   var sheet7 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet7");
