@@ -2,6 +2,8 @@
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
 // Thursday 05/21/2020 14:43 ET
 
+// Update Version 2 May 29,2020
+// Added Button's in sheet: test to individually create Syndication Sheet & Vod Doc 
 // There are 2 parts to creating the daily C3-VOD Doc with this script. 
 // This Script begins on Google Sheet "test"
 // Part 1 is to fill out the syndication timestamps.
@@ -9,6 +11,54 @@
 // Once you are done filling in the syndication timestamps, Script will prompt you to enter the Air Date.
 // Allow the format to be M/dd/YYYY  ie; 5/21/2020
 // The Sheet's Sheet7, and Sheet6 will automatically be generated after you enter the Air Date
+
+function BuildSyndication(){
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet7 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet7");
+  var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
+  
+  // Creating Sheet7 First
+  // Copy Network & Series into Sheet7
+     copyNetworkSeries(test,sheet7,lastRow);
+ 
+  // Copy Syndication for CMC-C & MPX into Sheet7
+     copyCmcMpx(test,sheet7,lastRow);
+  
+  // Copy Syndication for Dish, Direct-TV, DirecTV-NBC@VOD50-C into Sheet7
+     copyDishDirect(test,sheet7,lastRow);
+  
+  // Autoresize All column width's for Sheet7
+     autoResize(sheet7);
+
+  // Fill-in N/A's for empty cell's with no Syndication Timestamps
+  // Sending 3 parameters : Sheet to Check for empty cells, Column Letter to Check, Row Number to Check till.
+  // lastRow of Sheet7 would be the same as the lastRow in 'test'.
+     chkEmpty(sheet7,"C",lastRow);
+     chkEmpty(sheet7,"D",lastRow);
+     chkEmpty(sheet7,"E",lastRow);
+     chkEmpty(sheet7,"F",lastRow);
+     chkEmpty(sheet7,"G",lastRow);
+  
+  
+}
+
+function BuildDoc(){
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var date = airDate();
+  var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
+  var firstEmptyRow = sheet6.getLastRow()+1;
+  var TotalRowsCreated = (lastRow-2)*12;
+  
+  // Sheet7 is Complete, Now we create the VOD doc
+  // We will still be using the data from 'test' sheet
+     createVOD(test,sheet6,lastRow,date);
+  
+  // Allign text Center - The VOD doc
+     centerMeDoc(sheet6,TotalRowsCreated,firstEmptyRow);
+  
+  
+}
 
 function MagicMaker(){
   // Sheet where your focus should be
@@ -19,7 +69,7 @@ function MagicMaker(){
   var date = airDate();
   var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
   var firstEmptyRow = sheet6.getLastRow()+1;
-  var TotalRowsCreated = (lastRow-1)*12;
+  var TotalRowsCreated = (lastRow-2)*12;
   
   // Creating Sheet7 First
   // Copy Network & Series into Sheet7
@@ -59,23 +109,23 @@ function copyNetworkSeries(Test,Sheet7,rowNum){
   var test = Test;
   var sheet7 = Sheet7;
   var lastRow = rowNum;
-  var safePlace = "A2"; // Home Cell Location for Network & Series
+  var safePlace = "A3"; // Home Cell Location for Network & Series
   
   // Cell Poisiton where we wish to begin Copying data
-  test.getRange('A2').activate();
+  test.getRange('A3').activate();
   
   var currentCell = test.getCurrentCell();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate(); //Selecting all rows with data in Column
   currentCell.activateAsCurrentCell();
   
-  var range1 = "A2:B"+lastRow;
+  var range1 = "A3:B"+lastRow;
   test.getRange(range1).setBackground('#00ff00');
   test.getRange(range1).activate();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  sheet7.getRange('A2').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
-  var range2 = "test!A2:B"+lastRow;
+  sheet7.getRange('A3').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
+  var range2 = "test!A3:B"+lastRow;
   sheet7.getRange(range2).copyTo(sheet7.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
 
 }
@@ -87,23 +137,23 @@ function copyCmcMpx(Test,Sheet7,rowNum){
   var test = Test;
   var sheet7 = Sheet7;
   var lastRow = rowNum;
-  var safePlace = "H2"; // Home Cell location for CMC-C & MPX
+  var safePlace = "H3"; // Home Cell location for CMC-C & MPX
   
   // Cell Poisiton where we wish to begin Copying data
-  test.getRange('H2').activate();
+  test.getRange('H3').activate();
 
   var currentCell = test.getCurrentCell();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate(); //Selecting all rows with data in Column
   currentCell.activateAsCurrentCell();
   
-  var range1 = "H2:I"+lastRow;
+  var range1 = "H3:I"+lastRow;
   test.getRange(range1).setBackground('#00ff00');
   test.getRange(range1).activate();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  sheet7.getRange('C2').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
-  var range2 = "test!H2:I"+lastRow;
+  sheet7.getRange('C3').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
+  var range2 = "test!H3:I"+lastRow;
   sheet7.getRange(range2).copyTo(sheet7.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
  
 }
@@ -115,22 +165,22 @@ function copyDishDirect(Test,Sheet7,rowNum){
   var test = Test;
   var sheet7 = Sheet7;
   var lastRow = rowNum;
-  var safePlace = "K2"; // Home Cell location for Dish, Direct-TV, DirecTV-NBC@VOD50-C
+  var safePlace = "K3"; // Home Cell location for Dish, Direct-TV, DirecTV-NBC@VOD50-C
   
-  test.getRange('K2').activate();
+  test.getRange('K3').activate();
 
   var currentCell = test.getCurrentCell();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.DOWN).activate(); //Selecting all rows with data in Column
   currentCell.activateAsCurrentCell();
   
-  var range1 = "K2:M"+lastRow;
+  var range1 = "K3:M"+lastRow;
   test.getRange(range1).setBackground('#00ff00');
   test.getRange(range1).activate();
   test.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  sheet7.getRange('E2').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
-  var range2 = "test!K2:M"+lastRow;
+  sheet7.getRange('E3').activate(); // Cell Position of where we wish to begin Pasting on Sheet7
+  var range2 = "test!K3:M"+lastRow;
   sheet7.getRange(range2).copyTo(sheet7.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
   test.setActiveSelection(safePlace); 
   
@@ -147,7 +197,7 @@ function autoResize(sheet){
   var all = target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
   all.setHorizontalAlignment("center"); // Alligning text to center
   
-  target.getRange('A2').activate(); // Unselect all columns and rows by selecting cell A2
+  target.getRange('A3').activate(); // Unselect all columns and rows by selecting cell A2
 }
 
 function chkEmpty(sheet,col,lastRow){
@@ -159,10 +209,10 @@ function chkEmpty(sheet,col,lastRow){
   var targetCol = col;
   var lastR = lastRow;
   
-  var count = 2
+  var count = 3
   
   // Looping through each row starting at row 2
-  for (var count=2; count<=lastR; count++){
+  for (var count=3; count<=lastR; count++){
     var addr = col+count;  // Column Letter+Row Number  ie; E2
     target.getRange(addr).activate(); // Select starting cell
     var currentCell = target.getCurrentCell(); // Create variable of current cell to hold its value
@@ -192,7 +242,7 @@ function createVOD(Test,Sheet6,rowNum,Date){
   //var lastAssetRow = test.getLastRow();
   //var date = airDate();
   
-  for(var startRow=2;startRow<=lastRow;startRow++){ // Loop - Starting at Row 2 in test, As long as Row is less than The Last Row Number in test.
+  for(var startRow=3;startRow<=lastRow;startRow++){ // Loop - Starting at Row 2 in test, As long as Row is less than The Last Row Number in test.
 
     var pasteRow = sheet6.getLastRow()+1; // Get the next Empty row in sheet6 to paste to
     var endRow = pasteRow+12; 
