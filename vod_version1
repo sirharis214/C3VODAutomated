@@ -1,0 +1,126 @@
+function getAsset(){
+  Logger.clear();
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  test.getRange('A2').activate();
+  sheet6.getRange('A2').activate();
+  
+  var currentCell = test.getCurrentCell();
+  var lastRow = test.getLastRow();
+ 
+  // on sheet test, start copying at row 
+  for(var row=2; row<=lastRow; row++){
+    //var Row = test.getRange(row,1,1).getValue(); 
+    //sheet6.getRange(range).activate();
+
+    //on sheet test, start copying at col of row
+    //getRange(row#,col#,Include#ofRow
+    for(var col=1; col<=4;col++){
+      var eachPart = test.getRange(row,col,1).getValue();
+      // each cell of all assets
+      //Logger.log(eachPart);
+      
+      // Where to start pasting
+     
+      // on sheet6, The row to start adding new asset to
+      var nextEmpty = sheet6.getLastRow()+1;
+      
+      for(var startRow=nextEmpty; startRow<=25; startRow++){
+        var colNum = sheet6.getRange("C"+nextEmpty).activate().getColumn();
+        for(var partCol = colNum; partCol<=6; colNum++){
+         //var here = sheet.getRange(startRow,colNum,1); 
+          //here.activate();
+         sheet6.getRange(startRow,colNum,1).setValue(eachPart);
+          //Logger.log(here);
+        }
+        
+      }
+      
+    // Logger.log(nextEmpty);
+    }
+  }
+  
+}
+
+function try2(){
+    Logger.clear();
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  test.getRange('A2').activate();
+  sheet6.getRange('A2').activate();
+  
+  var currentCell = test.getCurrentCell();
+  var lastRow = test.getLastRow();
+ 
+  // on sheet test, start copying at row 
+  for(var row=2; row<=lastRow; row++){
+    //var Row = test.getRange(row,1,1).getValue(); 
+    var tempArray = test.getRange(row,1,1,4).getValues();
+   // Logger.log(tempArray);
+    
+    for(var i=0;i<tempArray.length;i++){
+      var eachShowArray = tempArray[i];
+      for(var ct=0; ct<eachShowArray.length; ct++){
+        var pasteThis = eachShowArray[ct];
+        Logger.log(pasteThis);
+        
+        for(var row=14;row<26;row++){
+          for(var col=3;col<=6;col++){
+          sheet6.getRange(row,col,1).setValue(pasteThis);
+            
+          }
+        }
+      }      
+    }
+    
+    //on sheet test, start copying at col of row
+    //getRange(row#,col#,Include#ofRow
+   /* for(var col=1; col<=4;col++){
+      var eachPart = test.getRange(row,col,1).getValue();
+      // each cell of all assets
+      //Logger.log(eachPart);
+      
+      var rowPaste = sheet6.getLastRow()+1;
+      Logger.log(rowPaste);
+  
+    } */
+  }
+  
+}
+
+function airDate(){
+ var date = Utilities.formatDate(new Date(), "GMT", "MM-dd-YY");
+// Logger.log(date);
+  return date;
+}
+
+
+// Resource
+function getMonth() {
+  
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var month = sheet6.getRange("A14").setFormula('=TEXT(B14,"MMMM")');
+  //Logger.log(date.getMonth()+1);
+}
+
+// NOTES
+/*
+var Row = test.getRange(row,1,1).getValue();
+    for (var i=nextEmpty;i<=lastRow; i++){
+     Logger.log("Network "+Row);
+      var range = "C"+i;
+     sheet6.getRange(range).setValue(Row);
+    }
+*/
+
+function getIndex(){
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var cell = sheet6.getRange("B14").activate().getColumn();
+  Logger.log(cell);
+  
+}
+
+function testCellIndex(){
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var cell = sheet6.getRange(14,3,1).activate();
+}
