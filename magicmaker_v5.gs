@@ -2,11 +2,13 @@
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
 // Thursday 05/21/2020 14:43 ET
 
-// Update Version 13 May 31,2020
-// magicmaker_v4.gs in git
-// Before Creating Doc, Clear all Filters from VODdoc,
-// Get a List of All dates and Hide their rows EXCEPT for 5/14/2020
-// These rows contain formula to copy over for column H:M
+// * Update Version 14 June 2,2020 5:15 AM
+// Building on Version 13, 
+// magicmakerv5 in git
+// Upon completion of Creating VOD doc, Hiding Rows with date 5/14/2020 ( formula rows) 
+// Purpose: inorder to have VODdoc ready for L1's to begin Sweeps. 
+// * Cleaned up Code from rough drafts.
+// * Updated all Log updates and texts to keep track of Script progress and performance. 
 
 
 function BuildSyndication(){
@@ -66,9 +68,9 @@ function BuildDoc(){
 
   // Before creating Doc, we must clear all filters and reveal rows 2-13
   // They contain Data validation Formulas for Columns H:M 
-     Logger.log("Starting process of Filtering and Revealing VODdoc rows with date 5/14/2020...");
-     showProtected(sheet6);
-  
+     Logger.log("Filtering and Revealing VODdoc rows with date 5/14/2020.");
+     var UniqueDates = showProtected(sheet6);
+    
   // We will still be using the data from 'test' sheet
      Logger.log("Starting process to create VODdoc...");
      createVOD(test,sheet6,lastRow,date);
@@ -81,6 +83,12 @@ function BuildDoc(){
      Logger.log("Aligning text Center and Resizing Columns...");
      centerMeDoc(sheet6,TotalRowsCreated,firstEmptyRow);
   
+  // Final step, Hide rows with date 5/14/2020
+     Logger.log("Hiding rows with Date 5/14/2020");
+     UniqueDates.push("5/14/2020");
+     hideFormula(sheet6,UniqueDates);
+  sheet6.getRange('A'+firstEmptyRow).activate();
+  Logger.log("VODdoc Ready!");
 }
 
 function MagicMaker(){
@@ -97,7 +105,7 @@ function MagicMaker(){
   var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
   var firstEmptyRow = sheet6.getLastRow()+1;
   var TotalRowsCreated = (lastRow-2)*12;
-  
+
   // Creating Sheet7 First
      Logger.log("Beginning process to create Syndication Sheet...");
   // Copy Network & Series into Sheet7
@@ -133,7 +141,7 @@ function MagicMaker(){
   // Before creating Doc, we must clear all filters and reveal rows 2-13
   // They contain Data validation Formulas for Columns H:M 
      Logger.log("Starting process of Filtering and Revealing VODdoc rows with date 5/14/2020...");
-     showProtected(sheet6);
+     var UniqueDates = showProtected(sheet6);
   
   // We will still be using the data from 'test' sheet
      Logger.log("Starting process to create VODdoc...");
@@ -146,6 +154,13 @@ function MagicMaker(){
   // Allign text Center and Resize Columns 1-7 - VODdoc
      Logger.log("Aligning text Center and Resizing Columns...");
      centerMeDoc(sheet6,TotalRowsCreated,firstEmptyRow);
+  
+  // Final step, Hide rows with date 5/14/2020
+     Logger.log("Hiding rows with Date 5/14/2020");
+     UniqueDates.push("5/14/2020");
+     hideFormula(sheet6,UniqueDates);
+  sheet6.getRange('A'+firstEmptyRow).activate();
+  Logger.log("VODdoc Ready!");
    
  }
 
@@ -171,16 +186,20 @@ function showProtected(sheet){
      var criteria = SpreadsheetApp.newFilterCriteria().setHiddenValues(myDates)
      .build();
      targetSheet.getFilter().setColumnFilterCriteria(2, criteria);
+      return myDates;
       Logger.log("Filtering and Revealing rows with Date 5/14/2020 Complete...");
 }
 
 function checkFilter(sheet) {
   var targetSheet = sheet;
   var filter = targetSheet.getFilter();
-
+  
+  targetSheet.getRange('B:B').activate();
+  
   if (filter !== null) {
-    Logger.log("Filter found, removing filters...");
-    filter.remove();
+    Logger.log("Filter on Column B found, removing filters...");
+    //targetSheet.getRange('B:B').activate();
+    targetSheet.getFilter().remove();
     return;
   }
   else{
@@ -191,6 +210,11 @@ function checkFilter(sheet) {
 
 function ridDouble(sheet){
   var targetSheet = sheet;
+  
+  // Make Dates Format as Plain Text
+     targetSheet.getRange('B:B').activate();
+     targetSheet.getActiveRangeList().setNumberFormat('@');
+  
   var values = targetSheet.getDataRange().getValues(); // Gets all Values in sheet
   var allDates = []; // Holds dates which continue duplicates
   var cleanDates = []; // Holds dates after filtering out duplicates
@@ -219,6 +243,20 @@ function ridDouble(sheet){
   return cleanDates; // return clean dates
 }
 
+
+function hideFormula(sheet,hideDates){
+     var targetSheet = sheet;
+     var hide = hideDates;
+     //Logger.log("Dates to Hide: "+ hide);
+  
+     var criteria = SpreadsheetApp.newFilterCriteria().setHiddenValues(hide)
+     .build();
+     
+     targetSheet.getRange('B:B').activate();
+     targetSheet.getFilter().setColumnFilterCriteria(2, criteria);
+
+     Logger.log("Hiding Date 5/14/2020 Complete...");
+}
 
 
 function copyNetworkSeries(Test,Sheet7,rowNum){
@@ -358,7 +396,8 @@ function createVOD(Test,Sheet6,rowNum,Date){
   
   // An Array to hold the 12 different Platform Devices
   var platforms = ["Android","AppleTV 3","AppleTV 4","Desktop","Directv","Dish","FireTV","iOS","Roku","Spectrum","X1","Xbox One"];
- 
+  
+  Logger.log("Copying each asset into VODdoc & Assigning platform tags.");
   for(var startRow=3;startRow<=lastRow;startRow++){ // Loop - Starting at Row 2 in test, As long as Row is less than The Last Row Number in test.
 
     var pasteRow = sheet6.getLastRow()+1; // Get the next Empty row in sheet6 to paste to
@@ -544,6 +583,7 @@ function airDate(){
   var ui = SpreadsheetApp.getUi();
   var date = ui.prompt("Please Enter the Air Date\nM/dd/YYYY").getResponseText(); // Store UserInput as Variable
 
+  Logger.log("Creating VODdoc for "+date);
   // Return Air Date Value
   return date;  
 }
