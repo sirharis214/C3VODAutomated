@@ -2,14 +2,10 @@
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
 // Thursday 05/21/2020 14:43 ET
 
-// * Update Version 14 June 2,2020 5:15 AM
-// Building on Version 13, 
-// magicmakerv5 in git
-// Upon completion of Creating VOD doc, Hiding Rows with date 5/14/2020 ( formula rows) 
-// Purpose: inorder to have VODdoc ready for L1's to begin Sweeps. 
-// * Cleaned up Code from rough drafts.
-// * Updated all Log updates and texts to keep track of Script progress and performance. 
+// ** Final Version Notes **
+// magicmakerv6 in git 
 
+// ** Start of Build Syndication **
 
 function BuildSyndication(){
   // This function is for the button "Build Syndication",
@@ -33,10 +29,6 @@ function BuildSyndication(){
      Logger.log("Copying Sundication for Dish and DirectTV...");
      copyDishDirect(test,sheet7,lastRow);
   
-  // Autoresize All column width's for Sheet7
-     Logger.log("Resizing Columns to fit text's...");
-     autoResize(sheet7);
-
   // Fill-in N/A's for empty cell's with no Syndication Timestamps
   // Sending 3 parameters : Sheet to Check for empty cells, Column Letter to Check, Row Number to Check till.
   // lastRow of Sheet7 would be the same as the lastRow in 'test'.
@@ -46,9 +38,68 @@ function BuildSyndication(){
      chkEmpty(sheet7,"E",lastRow);
      chkEmpty(sheet7,"F",lastRow);
      chkEmpty(sheet7,"G",lastRow);
-       Logger.log("N/A's have been Inserted.");
+       Logger.log("N/A's have been Inserted."); 
   
+  // Autoresize All column width's for Sheet7
+     Logger.log("Resizing Columns to fit text's...");
+     Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing before adding border
+     autoResize(sheet7,lastRow);
+
+} // End BuildSyndication()
+
+function chkEmpty(sheet,col,lastRow){
+  // Look for Empty Cell's and Add N/A's
+  // Format Cell's to gray
+  
+  // Declaring sheets as variables
+  var target = sheet;
+  var targetCol = col;
+  var lastR = lastRow;
+  
+  var count = 3
+  
+  // Looping through each row starting at row 2
+  for (var count=3; count<=lastR; count++){
+    var addr = col+count;  // Column Letter+Row Number  ie; E2
+    target.getRange(addr).activate(); // Select starting cell
+    var currentCell = target.getCurrentCell(); // Create variable of current cell to hold its value
+    currentCell.activateAsCurrentCell();
+    if(currentCell.getValue() == 0){ //If the cell is empty
+      var location = currentCell.getA1Notation(); // Get the cell's location
+      target.getRange(location).setValue("N/A");  // Add text "N/A"
+      target.getRange(location).setBackground('#b7b7b7'); // Change color to Gray
+    }  
+  } 
+// N/A's Inserted
+} // End of chkEmpty
+
+function autoResize(sheet,lastRow){
+  // For sheet7
+  // Selecting all rows and columns and auto resizing the Column width 
+  // Allign text to center 
+  
+  var target = sheet;
+  var endRow = lastRow;
+  
+  // Resize Columns to fit Text
+  target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
+  target.autoResizeColumns(1, 26); // Resizing Column Width
+  
+  // Align Text - Center
+  var all = target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
+  all.setHorizontalAlignment("center"); // Alligning text to center
+  
+  // Add Border all around to display grid view
+  target.getRange("A3:G"+endRow).activate();
+  target.getActiveRangeList().setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID);
+  
+  target.getRange('A3').activate(); // Unselect all columns and rows by selecting cell A2
+    Logger.log("Text alignment and Column Resize complete.");
 }
+
+// ** End of Building Syndication **
+//--------------------------------------------------------------------------------------------------------------
+// ** Start of Build VODdoc **
 
 function BuildDoc(){
   // This function is for the button "Build Doc",
@@ -77,6 +128,7 @@ function BuildDoc(){
   
   // Fill Brand 6's
      Logger.log("Inserting Brand 6's...");
+     Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing.
      Brand6(test,sheet6,brand6,firstEmptyRow);
   
   // Allign text Center and Resize Columns 1-7 - VODdoc
@@ -87,82 +139,10 @@ function BuildDoc(){
      Logger.log("Hiding rows with Date 5/14/2020");
      UniqueDates.push("5/14/2020");
      hideFormula(sheet6,UniqueDates);
+ 
   sheet6.getRange('A'+firstEmptyRow).activate();
   Logger.log("VODdoc Ready!");
 }
-
-function MagicMaker(){
-  // Sheet where your focus should be
-  // Fill out Syndications here
-  
-  Logger.clear();
-  Logger.log("We Will Create Syndication Sheet &\nAutomatically begin to create VODdoc.");
-  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
-  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
-  var brand6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Brand6");
-  var sheet7 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet7");
-  var date = airDate();
-  var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
-  var firstEmptyRow = sheet6.getLastRow()+1;
-  var TotalRowsCreated = (lastRow-2)*12;
-
-  // Creating Sheet7 First
-     Logger.log("Beginning process to create Syndication Sheet...");
-  // Copy Network & Series into Sheet7
-     Logger.log("Copying Network and Series...");
-     copyNetworkSeries(test,sheet7,lastRow);
- 
-  // Copy Syndication for CMC-C & MPX into Sheet7
-     Logger.log("Copying Syndication for CMC-C and MPX...");
-     copyCmcMpx(test,sheet7,lastRow);
-  
-  // Copy Syndication for Dish, Direct-TV, DirecTV-NBC@VOD50-C into Sheet7
-     Logger.log("Copying Sundication for Dish and DirectTV...");
-     copyDishDirect(test,sheet7,lastRow);
-  
-  // Autoresize All column width's for Sheet7
-     Logger.log("Resizing Columns to fit text's...");
-     autoResize(sheet7);
-
-  // Fill-in N/A's for empty cell's with no Syndication Timestamps
-  // Sending 3 parameters : Sheet to Check for empty cells, Column Letter to Check, Row Number to Check till.
-  // lastRow of Sheet7 would be the same as the lastRow in 'test'.
-       Logger.log("Filling in N/A's...");
-     chkEmpty(sheet7,"C",lastRow);
-     chkEmpty(sheet7,"D",lastRow);
-     chkEmpty(sheet7,"E",lastRow);
-     chkEmpty(sheet7,"F",lastRow);
-     chkEmpty(sheet7,"G",lastRow);
-       Logger.log("N/A's have been Inserted.");
-  
-  // Sheet7 is Complete, 
-     Logger.log("Syndication Sheet Created.");
-  
-  // Before creating Doc, we must clear all filters and reveal rows 2-13
-  // They contain Data validation Formulas for Columns H:M 
-     Logger.log("Starting process of Filtering and Revealing VODdoc rows with date 5/14/2020...");
-     var UniqueDates = showProtected(sheet6);
-  
-  // We will still be using the data from 'test' sheet
-     Logger.log("Starting process to create VODdoc...");
-     createVOD(test,sheet6,lastRow,date);
-  
-  // Fill Brand 6's
-     Logger.log("Inserting Brand 6's...");
-     Brand6(test,sheet6,brand6,firstEmptyRow);
-  
-  // Allign text Center and Resize Columns 1-7 - VODdoc
-     Logger.log("Aligning text Center and Resizing Columns...");
-     centerMeDoc(sheet6,TotalRowsCreated,firstEmptyRow);
-  
-  // Final step, Hide rows with date 5/14/2020
-     Logger.log("Hiding rows with Date 5/14/2020");
-     UniqueDates.push("5/14/2020");
-     hideFormula(sheet6,UniqueDates);
-  sheet6.getRange('A'+firstEmptyRow).activate();
-  Logger.log("VODdoc Ready!");
-   
- }
 
 function showProtected(sheet){
   // showProtected() filters out any dates to show us a clean sheet that only displays rows 1-13
@@ -185,10 +165,13 @@ function showProtected(sheet){
   
      var criteria = SpreadsheetApp.newFilterCriteria().setHiddenValues(myDates)
      .build();
+  
      targetSheet.getFilter().setColumnFilterCriteria(2, criteria);
-      return myDates;
-      Logger.log("Filtering and Revealing rows with Date 5/14/2020 Complete...");
-}
+     
+     return myDates;
+  
+     Logger.log("Filtering and Revealing rows with Date 5/14/2020 Complete...");
+} // End of showProtected
 
 function checkFilter(sheet) {
   var targetSheet = sheet;
@@ -205,8 +188,7 @@ function checkFilter(sheet) {
   else{
    Logger.log("No Filters found."); 
   }
-
-};
+} // End of checkFilter
 
 function ridDouble(sheet){
   var targetSheet = sheet;
@@ -241,8 +223,59 @@ function ridDouble(sheet){
   }
   Logger.log("Unique dates list complete...");
   return cleanDates; // return clean dates
-}
+} // End of ridDouble
 
+function createVOD(Test,Sheet6,rowNum,Date){
+
+  // Declaring variables
+  var test = Test;
+  var sheet6 = Sheet6;
+  var lastRow = rowNum;
+  var date = Date;
+  
+  // An Array to hold the 12 different Platform Devices
+  var platforms = ["Android","AppleTV 3","AppleTV 4","Desktop","Directv","Dish","FireTV","iOS","Roku","Spectrum","X1","Xbox One"];
+  
+  Logger.log("Copying each asset into VODdoc & Assigning platform tags.");
+  for(var startRow=3;startRow<=lastRow;startRow++){ // Loop - Starting at Row 2 in test, As long as Row is less than The Last Row Number in test.
+
+    var pasteRow = sheet6.getLastRow()+1; // Get the next Empty row in sheet6 to paste to
+    var endRow = pasteRow+12; 
+   
+    for(i=1;i<=4;i++){  // For Each column starting at column 1. Note: 4 Columns to Paste into (Network,Series,Title,MCPiD)
+      var temp = test.getRange(startRow,i).getValue(); // Variable to get the value we need to copy and paste into Sheet6
+   
+      for(var next=0;next<12;next++){ // paste in sheet6 at next available row, 12 times
+        sheet6.getRange(pasteRow+next,i+2).setValue(temp); // Entering the Values Network,Series,Title,MCPiD
+        sheet6.getRange(pasteRow+next,7).setValue(platforms[next]); // Entering the Platform Devices from Array
+        var focusRow = pasteRow+next;
+        sheet6.getRange('H'+focusRow).activate(); // Activating Starting Cell to Paste Status Formulas
+        sheet6.getRange('H13:M13').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false); // Copy Pasting Formulas from H13:M13
+        sheet6.getRange('B'+focusRow).setValue(date); // Adding Air Date to Column B
+        sheet6.getRange("A"+focusRow).setFormula('=TEXT(B'+focusRow+',"MMMM")'); // Extracting Month from Column B and adding to Column A as Text format
+      } // End next
+    } // End i 
+  } //End startRow
+} // End createVOD
+
+function centerMeDoc(Sheet6,TotalRows,FirstEmptyRow){
+  // Resize Columns and text-align center in VODdoc (sheet6)
+  var target = Sheet6;
+  var firstEmptyRow = FirstEmptyRow; // First Empty Row Number in sheet6
+  var TotalRowsCreated = TotalRows;  // Total Rows Created
+  var lastRow = firstEmptyRow+TotalRows;
+  
+  // center text
+  var all = target.getRange("A"+firstEmptyRow+":F"+lastRow).activate();
+  all.setHorizontalAlignment("center"); // Alligning text to center
+  target.getRange('A'+firstEmptyRow).activate();  
+  // resize column
+  target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
+  target.autoResizeColumns(1,7); // Resizing Column 1-7
+  
+  target.getRange('A'+firstEmptyRow).activate(); // Unselect all columns and rows by selecting FirstEmptyRow
+    Logger.log("Text alignment and Column Resize complete.");
+}
 
 function hideFormula(sheet,hideDates){
      var targetSheet = sheet;
@@ -258,7 +291,88 @@ function hideFormula(sheet,hideDates){
      Logger.log("Hiding Date 5/14/2020 Complete...");
 }
 
+// ** End of Building VODdoc **
+//--------------------------------------------------------------------------------------------------------------
+// ** Start of MagicMaker **
 
+function MagicMaker(){
+  // Sheet where your focus should be
+  // Fill out Syndications here
+  
+  Logger.clear();
+  Logger.log("We Will Create Syndication Sheet &\nAutomatically begin to create VODdoc.");
+  var test = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("test");
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet6");
+  var brand6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Brand6");
+  var sheet7 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet7");
+  var date = airDate();
+  var lastRow = test.getLastRow(); //Row Number of the Last asset in our list for today
+  var firstEmptyRow = sheet6.getLastRow()+1;
+  var TotalRowsCreated = (lastRow-2)*12;
+
+  // Creating Sheet7 First
+     Logger.log("Beginning process to create Syndication Sheet...");
+  // Copy Network & Series into Sheet7
+     Logger.log("Copying Network and Series...");
+     copyNetworkSeries(test,sheet7,lastRow);
+ 
+  // Copy Syndication for CMC-C & MPX into Sheet7
+     Logger.log("Copying Syndication for CMC-C and MPX...");
+     copyCmcMpx(test,sheet7,lastRow);
+  
+  // Copy Syndication for Dish, Direct-TV, DirecTV-NBC@VOD50-C into Sheet7
+     Logger.log("Copying Sundication for Dish and DirectTV...");
+     copyDishDirect(test,sheet7,lastRow);
+  
+ // Autoresize All column width's for Sheet7
+     Logger.log("Resizing Columns to fit text's...");
+     Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing before adding border
+     autoResize(sheet7,lastRow);
+
+  // Fill-in N/A's for empty cell's with no Syndication Timestamps
+  // Sending 3 parameters : Sheet to Check for empty cells, Column Letter to Check, Row Number to Check till.
+  // lastRow of Sheet7 would be the same as the lastRow in 'test'.
+       Logger.log("Filling in N/A's...");
+     chkEmpty(sheet7,"C",lastRow);
+     chkEmpty(sheet7,"D",lastRow);
+     chkEmpty(sheet7,"E",lastRow);
+     chkEmpty(sheet7,"F",lastRow);
+     chkEmpty(sheet7,"G",lastRow);
+       Logger.log("N/A's have been Inserted.");
+  
+  // Sheet7 is Complete, 
+     Logger.log("Syndication Sheet Created.");
+  
+  // Before creating Doc, we must clear all filters and reveal rows 2-13
+  // They contain Data validation Formulas for Columns H:M 
+     Logger.log("Starting process of Filtering and Revealing VODdoc rows with date 5/14/2020...");
+     var UniqueDates = showProtected(sheet6);
+  
+  // We will still be using the data from 'test' sheet
+     Logger.log("Starting process to create VODdoc...");
+     createVOD(test,sheet6,lastRow,date);
+  
+  // Fill Brand 6's
+     Logger.log("Inserting Brand 6's...");
+     Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing.
+     Brand6(test,sheet6,brand6,firstEmptyRow);
+  
+  // Allign text Center and Resize Columns 1-7 - VODdoc
+     Logger.log("Aligning text Center and Resizing Columns...");
+     centerMeDoc(sheet6,TotalRowsCreated,firstEmptyRow);
+  
+  // Final step, Hide rows with date 5/14/2020
+     Logger.log("Hiding rows with Date 5/14/2020");
+     UniqueDates.push("5/14/2020");
+     hideFormula(sheet6,UniqueDates);
+  
+  sheet6.getRange('A'+firstEmptyRow).activate();
+  Logger.log("VODdoc Ready!");  
+}
+
+// ** End of MagicMaker **
+
+// ** COPY PASTE Column Functions for Syndication Sheet
 function copyNetworkSeries(Test,Sheet7,rowNum){
   // Copies Formats Values of column's Network and Series from test and Paste them to appropriate columns in sheet7.
   
@@ -343,101 +457,7 @@ function copyDishDirect(Test,Sheet7,rowNum){
    Logger.log("Dish and DirectTV Syndication Columns complete.");
 }
 
-function chkEmpty(sheet,col,lastRow){
-  // Look for Empty Cell's and Add N/A's
-  // Format Cell's to gray
-  
-  // Declaring sheets as variables
-  var target = sheet;
-  var targetCol = col;
-  var lastR = lastRow;
-  
-  var count = 3
-  
-  // Looping through each row starting at row 2
-  for (var count=3; count<=lastR; count++){
-    var addr = col+count;  // Column Letter+Row Number  ie; E2
-    target.getRange(addr).activate(); // Select starting cell
-    var currentCell = target.getCurrentCell(); // Create variable of current cell to hold its value
-    currentCell.activateAsCurrentCell();
-    if(currentCell.getValue() == 0){ //If the cell is empty
-      var location = currentCell.getA1Notation(); // Get the cell's location
-      target.getRange(location).setValue("N/A");  // Add text "N/A"
-      target.getRange(location).setBackground('#b7b7b7'); // Change color to Gray
-    }  
-  } 
-// N/A's Inserted
-}
-
-function autoResize(sheet){
-  // For sheet7
-  // Selecting all rows and columns and auto resizing the Column width 
-  // Allign text to center 
-  
-  var target = sheet;
-  target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
-  target.autoResizeColumns(1, 26); // Resizing Column Width
-  
-  var all = target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
-  all.setHorizontalAlignment("center"); // Alligning text to center
-  
-  target.getRange('A3').activate(); // Unselect all columns and rows by selecting cell A2
-    Logger.log("Text alignment and Column Resize complete.");
-}
-
-
-function createVOD(Test,Sheet6,rowNum,Date){
-
-  // Declaring variables
-  var test = Test;
-  var sheet6 = Sheet6;
-  var lastRow = rowNum;
-  var date = Date;
-  
-  // An Array to hold the 12 different Platform Devices
-  var platforms = ["Android","AppleTV 3","AppleTV 4","Desktop","Directv","Dish","FireTV","iOS","Roku","Spectrum","X1","Xbox One"];
-  
-  Logger.log("Copying each asset into VODdoc & Assigning platform tags.");
-  for(var startRow=3;startRow<=lastRow;startRow++){ // Loop - Starting at Row 2 in test, As long as Row is less than The Last Row Number in test.
-
-    var pasteRow = sheet6.getLastRow()+1; // Get the next Empty row in sheet6 to paste to
-    var endRow = pasteRow+12; 
-   
-    for(i=1;i<=4;i++){  // For Each column starting at column 1. Note: 4 Columns to Paste into (Network,Series,Title,MCPiD)
-      var temp = test.getRange(startRow,i).getValue(); // Variable to get the value we need to copy and paste into Sheet6
-   
-      for(var next=0;next<12;next++){ // paste in sheet6 at next available row, 12 times
-        sheet6.getRange(pasteRow+next,i+2).setValue(temp); // Entering the Values Network,Series,Title,MCPiD
-        sheet6.getRange(pasteRow+next,7).setValue(platforms[next]); // Entering the Platform Devices from Array
-        var focusRow = pasteRow+next;
-        sheet6.getRange('H'+focusRow).activate(); // Activating Starting Cell to Paste Status Formulas
-        sheet6.getRange('H13:M13').copyTo(sheet6.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false); // Copy Pasting Formulas from H13:M13
-        sheet6.getRange('B'+focusRow).setValue(date); // Adding Air Date to Column B
-        sheet6.getRange("A"+focusRow).setFormula('=TEXT(B'+focusRow+',"MMMM")'); // Extracting Month from Column B and adding to Column A as Text format
-      } // End next
-    } // End i 
-  } //End startRow
-} // End Function
-
-function centerMeDoc(Sheet6,TotalRows,FirstEmptyRow){
-  // Resize Columns and text-align center in VODdoc (sheet6)
-  var target = Sheet6;
-  var firstEmptyRow = FirstEmptyRow; // First Empty Row Number in sheet6
-  var TotalRowsCreated = TotalRows;  // Total Rows Created
-  var lastRow = firstEmptyRow+TotalRows;
-  
-  // center text
-  var all = target.getRange("A"+firstEmptyRow+":F"+lastRow).activate();
-  all.setHorizontalAlignment("center"); // Alligning text to center
-  target.getRange('A'+firstEmptyRow).activate();  
-  // resize column
-  target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
-  target.autoResizeColumns(1,7); // Resizing Column 1-7
-  
-  target.getRange('A'+firstEmptyRow).activate(); // Unselect all columns and rows by selecting FirstEmptyRow
-    Logger.log("Text alignment and Column Resize complete.");
-}
-
+// ** Brand 6's for VODdoc
 function Brand6(assets,destination,source,EmptyRow){
   var test = assets;
   var sheet6 = destination;
@@ -575,7 +595,7 @@ function Brand6(assets,destination,source,EmptyRow){
     }
   }
    Logger.log("Brand 6's Inserted...");
-}
+} // End of Brand 6's
 
 function airDate(){
   // Prompt User to enter Air Date
@@ -587,7 +607,4 @@ function airDate(){
   // Return Air Date Value
   return date;  
 }
-
-
-
 
