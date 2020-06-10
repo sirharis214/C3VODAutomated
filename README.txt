@@ -2,6 +2,12 @@ Haris Nasir - C3VODAutomated - Git Branch : magicmakerv6
 Scripts are created for NBCU Digital NOC.
 This automates the creation of the Daily C3 checks Doc and simplifies the processes by allowing L1's to focus on one Doc. 
 
+New Sheet comparison to Traditional Sheets:
+"test" : C3 Checks *Month* 
+"sheet7" : Syndication Notes
+"sheet6" : C3 Checks (VOD Checks Doc)
+
+Rolls and Responsibilities:
 Evening L1 : L1-A
 Overnight L1 : L1-B
 Nextmorning L1 (morning of checks) : L1-C 
