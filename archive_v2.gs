@@ -1,9 +1,204 @@
 // This Script Admin,Owner and Developer is Haris Nasir.
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
-// Thursday 05/21/2020 14:43 ET
+// Thursday 06/13/2020 15:43 ET
 
-// ** Final Version Notes **
-// magicmakerv6 in git 
+// ** Changes Notes **
+// Make function to create TodaySheetName from todays date
+// Make funtion getSpreadsheetID flexiable to get id of any URL
+//  * This requires our initial user input of Destination URL to be moved into startArchive before Var SSID = getSpreadsheetID();
+
+// Archiving Assets once all Syndication Timestamps are complete
+// We must save todays assets from Builder into the Spreadsheet correspondent to Current Month.
+// EX: "C3 Checks JUNE 2020"
+//      This doc has a tab (sheet) for each day; asset's metadata and syndication timestamps are saved here.
+//      If you notice, it is the exact same data we see in "Builder", without the build buttons in row 1.
+// This Spreadsheet Doc will serve as a archive for the entire months assets, a new sheet for each day.
+// Therefore a new Spreadsheet must be made every month to archive the month's assets.
+
+// To Begin, We must ask the User for the URL of the Spreadsheet Doc of This month.
+// From the URL we will be fetching the Spreadsheet ID.
+// The Spreadsheet ID will gain us access to the data inside of it.
+// We can create sheet's and manipulate the sheet data inside of it, in our case, save today's asset's as an archive.
+// We must First Get a list of all the sheets inside that Spreadsheet,
+//     * Then check if a spreadsheet with today's date as the name already exists.
+//     * If yes, Save todays assets from "Builder" Range 'A3:M+Lastrow' into that sheet.
+//     * If no, Create sheet with todays date as Name + Save todays assets from "Builder" Range 'A3:M+Lastrow' into that sheet.
+
+function startArchive(){
+  
+  // Get the name for Today's Archive sheet
+     var TodaySheetName = dateAsname();
+  
+  // Get Spreadsheet ID
+     var ui = SpreadsheetApp.getUi();
+     var url = ui.prompt("URL of this Month's Asset DOC").getResponseText(); // Store UserInput as Variable
+     var SSID = getSpreadsheetID(url); // Archive Spreadsheet's Spreadsheet-ID
+  
+  // Check if Todays Sheet Name exists in Spreadsheet.
+     var Exists = chkExists(SSID,TodaySheetName);
+     Logger.log("TodaySheetName Already Exists? "+Exists);
+  
+  // If Exists == true 
+  // Copy assets into todays sheet
+  // else if Exists == false
+  // Create a sheet with todays date as name
+  // Then copy assets into todays sheet
+     if(Exists == true){
+       archiveAssets(SSID,TodaySheetName); 
+       // Auto resize Column Width and Align Text Center in Destination
+       resizeCenter(SSID,TodaySheetName);
+     }
+     else if (Exists == false){
+      // createArchiveSheet(SSID,TodaySheetName);
+      // archiveAssets(SSID,TodaySheetName);
+       // Auto resize Column Width and Align Text Center in Destination
+      // resizeCenter(SSID,TodaySheetName);
+       Logger.log("We need to create Sheet");
+     }  
+}
+
+function getSpreadsheetID(url) {
+  
+  // We want to get the Spreadsheet ID for this Months C3 Assets Doc to archive our assets into.
+  // Google Script's has built in function to get sheetID's but not the Spreadsheet ID.
+  // This function Splits through the URL and finds the Spreadsheet ID.
+  
+  // DELETE var ui = SpreadsheetApp.getUi();
+  // DELETE var url = ui.prompt("URL of this Month's Asset DOC").getResponseText(); // Store UserInput as Variable
+  var url = url;
+  
+  var firstPart = url.toString().split("/d/");
+  var secondPart = firstPart[1].split("/edit");
+  var SpreadsheetID = secondPart[0];
+  
+  Logger.log("Spreadsheet ID: "+SpreadsheetID);  
+  return SpreadsheetID;
+}
+
+function chkExists(spreadsheetID,todaysheetname) {
+  var sheetname = todaysheetname; // Sheet name we want to know if already exists.
+  
+  var ssid = spreadsheetID; // spreadsheet ID of where we will get all sheet names from.
+  var TargetSpreadsheet = SpreadsheetApp.openById(ssid); // making Variable for that Spreadsheet to get all sheet names from.
+  
+  var exists = false;     // By default, sheetname will be flagged as False, Does not exist.          
+  
+  var out = []; // Will hold list of Sheet names that are in Spreadsheet
+  
+  var sheets = TargetSpreadsheet.getSheets(); // Gets all the sheet's, as an Array
+  for (var i=0 ; i<sheets.length ; i++) out.push( [ sheets[i].getName() ] ) // Gets the Name of the sheet's and pushes into Array "out".
+   //Logger.log("List of SheetNames "+out); 
+  
+  // Check if sheetname exists in List of sheets.
+  // Remember, When we get sheet names from Target Spreadsheet, it returns each sheet name as Array.
+  // Our Array "out" is now a Two dimensional array,
+  // EX: out = [["6/2/20"], ["6/3/20"], ["6/4/20"]];
+  
+  for(i=0;i< out.length;i++){  // For each Array in Array:out
+    var val = out[i][0]; // index 0 will always be Name of Sheet.
+    Logger.log("Their Name: "+val+" Our Name: "+sheetname);
+   
+    if (val == sheetname){  // compare sheetname from Doc with the name we are looking for
+      exists = true; // if exist, flag "exists" as true and end loop
+      break;
+    }
+    else{
+     exists = false; // if it does not exsit, flag as false; 
+    }
+  }
+  
+  return exists;
+
+}
+
+function archiveAssets(ssid,todaysheetname){
+  // Copies over all Assets from Builder to sheet in Target Spreadsheet to Archive today's assets.
+  var ssid = ssid; // Spreadsheet ID of where target sheet exists
+  var todaysheetname = todaysheetname; // Name of the sheet to paste into.
+  var destinationSS = SpreadsheetApp.openById(ssid); // The Spreadsheet to Paste into as a Variable 
+  var sheet = destinationSS.getSheetByName(todaysheetname); // The Sheet in Spreadsheet to Paste into as a Variable
+  
+  var source = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Builder"); // The sheet to copy asset's from.
+  var lastRowNum = source.getLastRow(); // The Row number for the last asset in list.
+
+  for (var row = 3;row<=lastRowNum;row++){   // start at row 3 and increment till the last row
+      var myRow = source.getRange("A"+row+":E"+row).getValues(); // Loops through each row, creating Array within Array [[MSNBC,Series,Title,AssetID,Timestamp]]
+      myRow.sort();
+    for (var x = 0;x<myRow.length;x++){  // x is to loop through each subArray(1) in Array, Bascially getting that one Array that holds our values.
+      for (var i=0;i<myRow[x].length;i++){ // i is to loop through each value in subArray
+      var Val = myRow[x][i];  // same as myRow[0][i] 
+        sheet.getRange(row-1,i+1).setValue(Val);  // copy to destination starting at row-1 (Row 2), Column: i+1
+      }
+    }
+  } 
+}
+
+function resizeCenter(ssid,todaysheetname){
+  // Resize Columns and text-align center 
+  var ssid = ssid;
+  var todaysheetname = todaysheetname;
+  
+  var destinationSS = SpreadsheetApp.openById(ssid); // The Spreadsheet to Paste into as a Variable 
+  var sheet = destinationSS.getSheetByName(todaysheetname); // The Sheet in Spreadsheet to Paste into as a Variable
+  
+  var lastRow = sheet.getLastRow();
+  
+  // center text
+  var all = sheet.getRange("A1:M"+lastRow).activate();
+  all.setHorizontalAlignment("center"); // Alligning text to center  
+  // resize column
+  sheet.autoResizeColumns(1,13); // Resizing Column 1-7
+  
+  sheet.getRange("A1").activate(); // Unselect all columns and rows by selecting FirstEmptyRow
+    Logger.log("Text alignment and Column Resize complete.");
+}
+
+function createArchiveSheet(ssid,todaysheetname){
+  var ssid = ssid;
+  var todaysheetname = todaysheetname;
+  
+  var destinationSS = SpreadsheetApp.openById(ssid); // The Spreadsheet to Paste into as a Variable 
+  var sheet = destinationSS.getSheetByName(todaysheetname); // The Sheet in Spreadsheet to Paste into as a Variable
+  
+  // We want to copy Entire Row 2 from "Builder"  which is the header row for Row 1 in Archive sheet
+  // To do that we need the Spreadsheet ID of Active Spreadsheet
+  var sourceSpreadsheet = SpreadsheetApp.getActiveSpreadsheet(); 
+  var url = sourceSpreadsheet.getUrl(); // Gets URL of "Builder" Spreadsheet
+  var sourceSSID = getSpreadsheetID(url); // SpreadsheetID of Active Spreadsheet
+  
+  Logger.log("Source SS ID: "+sourceSSID);
+  
+  // Create the sheet with the date name
+  sheet.insertSheet(todaysheetname);
+   
+}
+
+function dateAsname(){
+  // Objective is to get Date in format m/d/yy
+  // ex; 6/6/20 & 6/10/20
+  
+  // Create a new Date object
+     var date = new Date();
+  
+  // Get the Various parts as simplified digit values, no decimal points or leading zeros
+     var month = date.getMonth()+1;month = month.toString().slice(-1);
+     var day = date.getDate(); if(day.toString().length==1){var day = day.toString().slice(-1);}
+     var year = date.getFullYear().toString().slice(-2);
+
+        // Logger.log("\nMonth: "+month+"\nDay: "+day+"\nYear: "+year);
+
+     // Return the Date that will be used as the name for the sheet
+     var d = month+"/"+day+"/"+year;
+        //Logger.log(d);
+   return d
+}
+
+
+
+/*
+
+
+
 
 // ** Start of Build Syndication **
 
@@ -608,3 +803,4 @@ function airDate(){
   return date;  
 }
 
+*/

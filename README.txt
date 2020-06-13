@@ -1,6 +1,23 @@
-Haris Nasir - C3VODAutomated - Git Branch : magicmakerv6
+Haris Nasir - C3VODAutomated - Git Branch : archiveV1
 Scripts are created for NBCU Digital NOC.
 This automates the creation of the Daily C3 checks Doc and simplifies the processes by allowing L1's to focus on one Doc. 
+
+New Feature archiveV1:
+* The Builder Sheet is reused everyday, 
+  erasing old assets and replaced with new assets by an L1-A.
+
+  -- BEFORE THEY ERASE OLD ASSET'S --
+
+* Once all Syndication timestamps are complete at the end of the day, an L1
+  Has to Click Archive Button.
+* They will need to provide the URL of the Google Spreadsheet correlating to 
+  that Month.
+ - This Archive Script Searches the Names of all Sheets in that Spreadsheet,
+   Looking for a sheetname with todays date.
+ - If it finds it, it will copy over all asset data from Builder into this sheet.
+ - If does NOT find a sheet with todays date as the name, 
+   It will create the sheet + copy over all asset data from Builder into this sheet. 
+
 
 New Sheet comparison to Traditional Sheets:
 "test" : C3 Checks *Month* 
