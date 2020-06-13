@@ -1,11 +1,12 @@
 // This Script Admin,Owner and Developer is Haris Nasir.
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
-// Thursday 06/13/2020 15:43 ET
+// Thursday 06/13/2020 15:50 ET
 
 // ** Changes Notes **
-// Make function to create TodaySheetName from todays date
-// Make funtion getSpreadsheetID flexiable to get id of any URL
-//  * This requires our initial user input of Destination URL to be moved into startArchive before Var SSID = getSpreadsheetID();
+// If TodaySheetName Does not already Exists,
+// Create sheet with TodaySheetName as name
+//  * Paste Over Row 3 from Source "Builder" to new sheet row 2
+// Archive Assets into new sheet.
 
 // Archiving Assets once all Syndication Timestamps are complete
 // We must save todays assets from Builder into the Spreadsheet correspondent to Current Month.
@@ -49,11 +50,10 @@ function startArchive(){
        resizeCenter(SSID,TodaySheetName);
      }
      else if (Exists == false){
-      // createArchiveSheet(SSID,TodaySheetName);
-      // archiveAssets(SSID,TodaySheetName);
+       createArchiveSheet(SSID,TodaySheetName);
+       archiveAssets(SSID,TodaySheetName);
        // Auto resize Column Width and Align Text Center in Destination
-      // resizeCenter(SSID,TodaySheetName);
-       Logger.log("We need to create Sheet");
+       resizeCenter(SSID,TodaySheetName);
      }  
 }
 
@@ -63,8 +63,6 @@ function getSpreadsheetID(url) {
   // Google Script's has built in function to get sheetID's but not the Spreadsheet ID.
   // This function Splits through the URL and finds the Spreadsheet ID.
   
-  // DELETE var ui = SpreadsheetApp.getUi();
-  // DELETE var url = ui.prompt("URL of this Month's Asset DOC").getResponseText(); // Store UserInput as Variable
   var url = url;
   
   var firstPart = url.toString().split("/d/");
@@ -122,7 +120,7 @@ function archiveAssets(ssid,todaysheetname){
   var lastRowNum = source.getLastRow(); // The Row number for the last asset in list.
 
   for (var row = 3;row<=lastRowNum;row++){   // start at row 3 and increment till the last row
-      var myRow = source.getRange("A"+row+":E"+row).getValues(); // Loops through each row, creating Array within Array [[MSNBC,Series,Title,AssetID,Timestamp]]
+      var myRow = source.getRange("A"+row+":M"+row).getValues(); // Loops through each row, creating Array within Array [[MSNBC,Series,Title,AssetID,Timestamp]]
       myRow.sort();
     for (var x = 0;x<myRow.length;x++){  // x is to loop through each subArray(1) in Array, Bascially getting that one Array that holds our values.
       for (var i=0;i<myRow[x].length;i++){ // i is to loop through each value in subArray
@@ -158,19 +156,24 @@ function createArchiveSheet(ssid,todaysheetname){
   var todaysheetname = todaysheetname;
   
   var destinationSS = SpreadsheetApp.openById(ssid); // The Spreadsheet to Paste into as a Variable 
-  var sheet = destinationSS.getSheetByName(todaysheetname); // The Sheet in Spreadsheet to Paste into as a Variable
-  
-  // We want to copy Entire Row 2 from "Builder"  which is the header row for Row 1 in Archive sheet
-  // To do that we need the Spreadsheet ID of Active Spreadsheet
-  var sourceSpreadsheet = SpreadsheetApp.getActiveSpreadsheet(); 
-  var url = sourceSpreadsheet.getUrl(); // Gets URL of "Builder" Spreadsheet
-  var sourceSSID = getSpreadsheetID(url); // SpreadsheetID of Active Spreadsheet
-  
-  Logger.log("Source SS ID: "+sourceSSID);
   
   // Create the sheet with the date name
-  sheet.insertSheet(todaysheetname);
-   
+  destinationSS.insertSheet(todaysheetname);
+  // We want to copy Entire Row 2 from "Builder"  which is the header row for Row 1 in Archive sheet
+  // Copy Row 2 from "Builder into Row 1 of new sheet
+  var source = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Builder"); // The sheet to copy Row 2 from.
+  var myRow = source.getRange("A2:M2").getValues(); // Loops through each row, creating Array within Array [[MSNBC,Series,Title,AssetID,Timestamp]]  
+  
+  // Adding Header Values to Row 1
+      for (var i=0;i<myRow[0].length;i++){ // i is to loop through each value in Array of header values
+      var Val = myRow[0][i];  // Get each Value        
+        var destinationSheet = destinationSS.getSheetByName(todaysheetname); // our new sheet
+        destinationSheet.getRange(1,i+1).setValue(Val);  // copy to destination starting at row 1, Column: i+1
+      }
+  
+  //var lastRowNum = destinationSheet.getLastRow(); // The Row number for the last asset in list.
+  destinationSheet.getRange("A1:M1").setBackground('#4a86e8'); // Change background color of Header to blue
+  //destinationSheet.getRange("A2:M"+lastRowNum).setBackground('#00ff00'); // Change background color of Header to green
 }
 
 function dateAsname(){
