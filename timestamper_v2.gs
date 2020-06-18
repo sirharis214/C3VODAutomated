@@ -2,10 +2,12 @@
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
 // Thursday 6/18/2020 13:00 ET
 
-// ** Changes Notes git: timestamperV1 **
+// ** Changes Notes git: timestamperV2 **
 // Adding feature : auto insertion of timestamp when columns H,J,L are edited.
 // 6/18/20 13:15
 // BUG: onEdit working for all sheets in this spreadsheet, we need to make the onEdit functionality work only for "C3Checks"
+// 6/18/20 13:43
+// BUG FIXED : Line 631
 
 // Archiving Assets once all Syndication Timestamps are complete
 // We must save todays assets from Builder into the Spreadsheet correspondent to Current Month.
@@ -627,24 +629,30 @@ Logger.log("Syndication Sheet Created.");
 //--------------------------------------------------------------------------------------------------------------
 // ** End of MagicMaker **
 
-// ** onEdit, when status is changed for asset in Columns H,J, or L, time stamp is automatically added.
+// ** onEdit, for sheet: C3Checks, when status is changed for asset in Columns H,J, or L, timestamp is automatically added.
 function onEdit(cel) {
   var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var activeCell = activeSheet.getActiveCell();
   var row = activeCell.getRow();
   var col = activeCell.getColumn();
   var val = activeCell.getValue();
-  Logger.log(val);
   
- // We want to Make sure the script is being applied to Columns H,J or L Only (8,10,12)
-  if(col == 8 || col == 10 || col == 12){
-    if(val != "NULL"){ // If the value is anything but NULL , get the timestamp as a value
-      var timestamp = getTimestamp();
-      activeSheet.getRange(row, col+1).setValue(timestamp);
-    }
-    else if(val == "NULL"){
-      activeSheet.getRange(row,col+1).setValue(" ");
-    }
+  var sheetName = activeSheet.getSheetName(); // The active sheets name, if its C3Checks, then carry on with onEdit 
+  if(sheetName == "C3Checks"){
+  
+    // We want to Make sure the script is being applied to Columns H,J or L Only (8,10,12)
+     if(col == 8 || col == 10 || col == 12){
+       if(val != "NULL"){ // If the value is anything but NULL , get the timestamp as a value
+         var timestamp = getTimestamp();
+         activeSheet.getRange(row, col+1).setValue(timestamp);
+       }
+       else if(val == "NULL"){
+         activeSheet.getRange(row,col+1).setValue("NULL");
+       }
+     }
+  }
+  else if(sheetName != "C3Checks"){   // if active sheet is not C3Check - exit function
+   exit(); 
   }
 }
 
