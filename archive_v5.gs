@@ -1,12 +1,11 @@
 // This Script Admin,Owner and Developer is Haris Nasir.
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
-// Thursday 6/15/2020 08:30 ET
+// Thursday 6/15/2020 12:35 ET
 
-// ** Changes Notes git: archiveV4**
-// Using Global Variables for Sheet Names (Variable Scope within Sheet: C3VODAutomated) (Not used for Archiving)
-// Global Variables Defined on Line: 204
-// Renaming sheet names in functions
-// Reconfiguring functions to work between two spreadsheets
+// ** Changes Notes git: archiveV5**
+// To eliminate user input of URL for Archive Spreadsheet...
+// Getting Archive Spreadsheet URL from a spreadsheet list
+// Spreadsheet ID for spreadsheet with urls is neccessary to be typed in line 96
 
 // Archiving Assets once all Syndication Timestamps are complete
 // We must save todays assets from Builder into the Spreadsheet correspondent to Current Month.
@@ -25,14 +24,15 @@
 //     * If yes, Save todays assets from "Builder" Range 'A3:M+Lastrow' into that sheet.
 //     * If no, Create sheet with todays date as Name + Save todays assets from "Builder" Range 'A3:M+Lastrow' into that sheet.
 
+
 function startArchive(){
   
   // Get the name for Today's Archive sheet
      var TodaySheetName = dateAsname();
   
-  // Get Spreadsheet ID
-     var ui = SpreadsheetApp.getUi();
-     var url = ui.prompt("URL of this Month's Asset DOC").getResponseText(); // Store UserInput as Variable
+  // Get Spreadsheet ID from the Spreadsheet URL
+  // Find the Spreadsheet URL from the List of URL's in "Archive Spreadsheet URL's
+     var url = getURL();
      var SSID = getSpreadsheetID(url); // Archive Spreadsheet's Spreadsheet-ID
   
   // Check if Todays Sheet Name exists in Spreadsheet.
@@ -58,6 +58,62 @@ function startArchive(){
        // Auto resize Column Width and Align Text Center in Destination
        resizeCenter(SSID,TodaySheetName);
      }  
+}
+
+function getURL(){
+  // Spreadsheet Names for each month follow this format: "C3 Checks Month 2020"
+  // To get the correct Spreadsheet URL:
+  // We need to look for this months+year's Spreadsheet name in the List of Archive Spreadsheet Names and URL's
+  // We will get this month and year and generate a keywork "C3 Checks "+ month +" "+ year (should make a lowercase keyword to avoid case sensitivity errors)
+  // Then we will get all the spreadsheet names available in Archive List, once a match is found, we will grab the associated URL in column D.
+  
+  var monthStringList = {
+    "1": "January",
+    "2": "February",
+    "3":"March",
+    "4":"April",
+    "5":"May",
+    "6":"June",
+    "7":"July",
+    "8":"August",
+    "9":"September",
+    "10":"October",
+    "11":"November",
+    "12":"December"
+  };
+  
+  // Create a new Date object
+     var date = new Date();
+  // Get the Various parts as simplified digit values, no decimal points or leading zeros
+     var month = date.getMonth()+1;month = month.toString().slice(-1); // no leading zero or decimals
+     var year = date.getFullYear().toString(); // Four digit year: 2020
+  
+  var MonthString = monthStringList[month];                      
+  var keyword = "C3 Checks "+MonthString+" "+year;  // The Keyword we will be searching for from the List of Spreadsheet Names
+  var keywordLow = keyword.toLowerCase();  // Lowercase the Month so Case sensitivity is avoided while cross referencing with Spreadsheet Names.
+ 
+  // Look for Keywords "Month Year" (June 2020) in column C of Spreadsheet: "Archive Spreadsheet URL's"
+      var SpreadsheetID = "1ERvaP5mCiiqhuWyaunEzV8-qoJiiZMm4ohuyeCQ_FsQ";
+      var urlList = SpreadsheetApp.openById(SpreadsheetID).getSheetByName("Url List"); // The sheet in the spreadsheet with list of URL's
+  
+  var LastRow = urlList.getLastRow(); // The row number of the last spreadsheet name from list of url's
+  var Names = urlList.getRange("C2:C"+LastRow).getValues(); // List of all the Spreadsheet Names in list of url's
+  
+  // find the keyword in the list of spreadsheet names
+     for(var i=0;i<Names.length;i++){  //
+       var listName = Names[i].toString().toLowerCase();;   // Loser case the spreadsheet name to avoid case sensitivity problems
+     
+       if(listName == keywordLow){  // if the spreadsheet name from  the list of url's matches our lowercased keyword
+         var row = i+2; // the row number the spreadsheet name was found on
+         var url = urlList.getRange("D"+row).getValue(); // Get the URL for that row
+         break;
+       }
+       else{
+        //If a Spreadsheet does not exist or was not found, use that "Archive Spreadsheet URL's" as the default url.
+         var url = "https://docs.google.com/spreadsheets/d/1ERvaP5mCiiqhuWyaunEzV8-qoJiiZMm4ohuyeCQ_FsQ/edit#gid=0";
+       }
+     }
+return url;
 }
 
 function getSpreadsheetID(url) {
@@ -109,7 +165,6 @@ function chkExists(spreadsheetID,todaysheetname) {
   }
   
   return exists;
-
 }
 
 function archiveAssets(ssid,todaysheetname){
