@@ -2,12 +2,21 @@
 // Any and all changes must be approved by Haris Nasir due to the complex build of this script.
 // Thursday 6/18/2020 13:00 ET
 
-// ** Changes Notes git: timestamperV2 **
-// Adding feature : auto insertion of timestamp when columns H,J,L are edited.
-// 6/18/20 13:15
-// BUG: onEdit working for all sheets in this spreadsheet, we need to make the onEdit functionality work only for "C3Checks"
-// 6/18/20 13:43
-// BUG FIXED : Line 631
+// ** Changes Notes  git repo: resetBttn**
+// 6/18/20 17:20
+// Button called "RESET" to clear data from SyndicationNotes and Builder.
+// All Button images upgraded.
+// Got rid of row 1 in SyndicationNotes where it said "do not delete row", when copying over from Builder.
+// Colors to syndication happens on SyndicationNotes only, keeping Builder format uniform
+// In Builder:
+//    Five Options for cell values when filling in syndication time stamps in "Builder".
+//      1. -The Actual Timestamp from MCP-
+//      2. pending | PENDING | Pending
+//      3. transcoding | TRANSCODING | Transcoding
+//      4. error | ERROR | Error
+//      5. -Leave Empty if N/A-
+// Not Case sensitive
+// But spelling must be as listed above 
 
 // Archiving Assets once all Syndication Timestamps are complete
 // We must save todays assets from Builder into the Spreadsheet correspondent to Current Month.
@@ -264,6 +273,14 @@ var c3Checks = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("C3Checks");
 var brand6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Brand6");
 
 
+function reset(){
+  var lastRowNumB = builder.getLastRow();
+  var lastRowNumS = syndicationNotes.getLastRow();
+  
+  builder.getRange("A3:M"+lastRowNumB).clear();
+  syndicationNotes.getRange("A2:G"+lastRowNumS).clear();
+ 
+}
 
 // ** Start of Build Syndication **
 
@@ -274,7 +291,7 @@ function BuildSyndication(){
   Logger.clear();
   Logger.log("Beginning to create Syndication Sheet...");
   
-  var lastRow = builder.getLastRow(); //Row Number of the Last asset in our list for today
+  var lastRow = builder.getLastRow(); //Row Number of the Last asset in "Builder".
 
   // Copy Network & Series into SyndicationNotes
      Logger.log("Copying Network and Series...");
@@ -301,7 +318,7 @@ function BuildSyndication(){
   
   // Autoresize All column width's for SyndicationNotes
      Logger.log("Resizing Columns to fit text's...");
-     Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing before adding border
+     //Utilities.sleep(100); // Pause for 100 milliseconds to avoid sheet freezing before adding border
      autoResize(syndicationNotes,lastRow);
 
 } // End BuildSyndication()
@@ -313,21 +330,32 @@ function chkEmpty(syndicationSheet,col,lastRow){
   // Declaring sheets as variables
   var target = syndicationSheet;
   var targetCol = col;
-  var lastR = lastRow;
+  var lastR = lastRow-1; //Last row in SyndicationNotes = (Lastrow of Builder) - 1
   
-  var count = 3
+  var count = 2
   
   // Looping through each row starting at row 2
-  for (var count=3; count<=lastR; count++){
+  for (var count=2; count<=lastR; count++){
     var addr = col+count;  // Column Letter+Row Number  ie; E2
     target.getRange(addr).activate(); // Select starting cell
     var currentCell = target.getCurrentCell(); // Create variable of current cell to hold its value
     currentCell.activateAsCurrentCell();
-    if(currentCell.getValue() == 0){ //If the cell is empty
+    
+    var CellVal = currentCell.getValue().toLowerCase() ; // Value of the current cell in lowercase form to avoide case sensativity 
+  
+    if(CellVal == 0){ //If the cell is empty
       var location = currentCell.getA1Notation(); // Get the cell's location
       target.getRange(location).setValue("N/A");  // Add text "N/A"
       target.getRange(location).setBackground('#b7b7b7'); // Change color to Gray
     }  
+    else if(CellVal == "pending" || CellVal == "transcoding"){
+      var location = currentCell.getA1Notation(); // Get the cell's location
+      target.getRange(location).setBackground('#ffff00'); // Change color to yellow
+    }
+    else if(CellVal == "error"){
+      var location = currentCell.getA1Notation(); // Get the cell's location
+      target.getRange(location).setBackground('#ea9999'); // Change color to red
+    }
   } 
 // N/A's Inserted
 } // End of chkEmpty
@@ -338,7 +366,7 @@ function autoResize(SyndicationSheet,lastRow){
   // Allign text to center 
   
   var target = SyndicationSheet;
-  var endRow = lastRow;
+  var endRow = lastRow-1;
   
   // Resize Columns to fit Text
   target.getRange(1, 1, target.getMaxRows(), target.getMaxColumns()).activate(); // Start at top-left corner, selecting all Rows and Columns with data in it.
@@ -349,10 +377,10 @@ function autoResize(SyndicationSheet,lastRow){
   all.setHorizontalAlignment("center"); // Alligning text to center
   
   // Add Border all around to display grid view
-  target.getRange("A3:G"+endRow).activate();
+  target.getRange("A2:G"+endRow).activate();
   target.getActiveRangeList().setBorder(true, true, true, true, true, true, '#000000', SpreadsheetApp.BorderStyle.SOLID);
   
-  target.getRange('A3').activate(); // Unselect all columns and rows by selecting cell A2
+  target.getRange('A2').activate(); // Unselect all columns and rows by selecting cell A2
     Logger.log("Text alignment and Column Resize complete.");
 }
 
@@ -629,7 +657,7 @@ Logger.log("Syndication Sheet Created.");
 //--------------------------------------------------------------------------------------------------------------
 // ** End of MagicMaker **
 
-// ** onEdit, for sheet: C3Checks, when status is changed for asset in Columns H,J, or L, timestamp is automatically added.
+// ** onEdit, when status is changed for asset in Columns H,J, or L, time stamp is automatically added.
 function onEdit(cel) {
   var activeSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var activeCell = activeSheet.getActiveCell();
@@ -680,7 +708,7 @@ function copyNetworkSeries(Builder,SyndicationNotes,rowNum){
   var builder = Builder;
   var syndicationNotes = SyndicationNotes;
   var lastRow = rowNum;
-  var safePlace = "A3"; // Home Cell Location for Network & Series
+  var safePlace = "A2"; // Home Cell Location for Network & Series in Builder
   
   // Cell Poisiton where we wish to begin Copying data
   builder.getRange('A3').activate();
@@ -690,14 +718,16 @@ function copyNetworkSeries(Builder,SyndicationNotes,rowNum){
   currentCell.activateAsCurrentCell();
   
   var range1 = "A3:B"+lastRow;
-  builder.getRange(range1).setBackground('#00ff00');
   builder.getRange(range1).activate();
   builder.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  syndicationNotes.getRange('A3').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
+  syndicationNotes.getRange('A2').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
   var range2 = "Builder!A3:B"+lastRow;
   syndicationNotes.getRange(range2).copyTo(syndicationNotes.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
+  
+  var range3 = "A2:B"+(lastRow-1);
+  syndicationNotes.getRange(range3).setBackground('#00ff00');
    Logger.log("Network and Series Columns complete.");
 }
 
@@ -708,7 +738,7 @@ function copyCmcMpx(Builder,SyndicationNotes,rowNum){
   var builder = Builder;
   var syndicationNotes = SyndicationNotes;
   var lastRow = rowNum;
-  var safePlace = "H3"; // Home Cell location for CMC-C & MPX
+  var safePlace = "H3"; // Home Cell location for CMC-C & MPX in Builder
   
   // Cell Poisiton where we wish to begin Copying data
   builder.getRange('H3').activate();
@@ -718,14 +748,16 @@ function copyCmcMpx(Builder,SyndicationNotes,rowNum){
   currentCell.activateAsCurrentCell();
   
   var range1 = "H3:I"+lastRow;
-  builder.getRange(range1).setBackground('#00ff00');
   builder.getRange(range1).activate();
   builder.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  syndicationNotes.getRange('C3').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
+  syndicationNotes.getRange('C2').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
   var range2 = "Builder!H3:I"+lastRow;
   syndicationNotes.getRange(range2).copyTo(syndicationNotes.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
+  
+  var range3 = "C2:D"+(lastRow-1);
+  syndicationNotes.getRange(range3).setBackground('#00ff00');
    Logger.log("CMC-C and MPX Syndication Columns complete.");
 }
 
@@ -736,7 +768,7 @@ function copyDishDirect(Builder,SyndicationNotes,rowNum){
   var builder = Builder;
   var syndicationNotes = SyndicationNotes;
   var lastRow = rowNum;
-  var safePlace = "K3"; // Home Cell location for Dish, Direct-TV, DirecTV-NBC@VOD50-C
+  var safePlace = "K3"; // Home Cell location for Dish, Direct-TV, DirecTV-NBC@VOD50-C in Builder
   
   builder.getRange('K3').activate();
 
@@ -745,14 +777,17 @@ function copyDishDirect(Builder,SyndicationNotes,rowNum){
   currentCell.activateAsCurrentCell();
   
   var range1 = "K3:M"+lastRow;
-  builder.getRange(range1).setBackground('#00ff00');
   builder.getRange(range1).activate();
   builder.getSelection().getNextDataRange(SpreadsheetApp.Direction.NEXT).activate(); //Selecting All columns associated with range
   currentCell.activateAsCurrentCell();
   
-  syndicationNotes.getRange('E3').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
+  syndicationNotes.getRange('E2').activate(); // Cell Position of where we wish to begin Pasting on SyndicationNotes
   var range2 = "Builder!K3:M"+lastRow;
   syndicationNotes.getRange(range2).copyTo(syndicationNotes.getActiveRange(), SpreadsheetApp.CopyPasteType.PASTE_NORMAL, false);  
+  
+  var range3 = "E2:G"+(lastRow-1);
+  syndicationNotes.getRange(range3).setBackground('#00ff00');
+  
   builder.setActiveSelection(safePlace); 
    Logger.log("Dish and DirectTV Syndication Columns complete.");
 }
